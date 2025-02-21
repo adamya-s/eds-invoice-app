@@ -145,6 +145,7 @@
 .vender-address {
   margin-bottom: 8px;
   font-weight: 500;
+  color: #7a7a7a;
 }
 .section-icon-container {
   display: inline-flex;
@@ -160,19 +161,68 @@
   font-weight: bold;
   color: #2196f3;
 }
-
-.form-content {
-  /* padding: 24px 0; */
-}
-.invoice-input {
-  width: 50%;
-}
-.form-row {
+.invoice-input-group {
   display: flex;
-  gap: 24px;
+  gap: 20px;
+}
+.invoice-group input {
+  min-width: 300px;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 14px;
   margin-bottom: 16px;
 }
-
+.invoice-group select {
+  min-width: 330px;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+.invoice-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #7a7a7a;
+}
+.expense-input-group {
+  display: flex;
+  gap: 20px;
+}
+.expense-group input {
+  min-width: 300px;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+.expense-group select {
+  min-width: 330px;
+  padding: 8px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+.expense-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #7a7a7a;
+}
+.comment-section {
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+.comment-section h2 {
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .form-group {
   flex: 1;
   margin-bottom: 16px;
@@ -182,11 +232,13 @@
   display: block;
   margin-bottom: 8px;
   font-weight: 500;
+  color: #7a7a7a;
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
+  max-width: -webkit-fill-available;
   width: 100%;
   padding: 8px 12px;
   border: 1px solid #e0e0e0;
@@ -202,8 +254,39 @@
   display: flex;
   justify-content: space-between;
 }
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.toggle-sub-container {
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  overflow: hidden;
+  background: white;
+  margin-left: 10px; /* Add some spacing between text and toggle buttons */
+}
+.toggle-btn {
+  padding: 6px 12px;
+  border: none;
+  cursor: pointer;
+  background: transparent;
+  font-size: 14px;
+  font-weight: bold;
+  color: #555;
+  transition: background 0.3s ease;
+}
 
-.add-coding-button {
+.toggle-btn:hover {
+  background: #e0e0e0;
+}
+
+.toggle-btn.selected {
+  background: #007bff;
+  color: white;
+}
+.add-vendor-button {
   color: #2196f3;
   background: none;
   border: none;
@@ -211,10 +294,32 @@
   cursor: pointer;
   font-weight: 500;
   display: flex;
-  justify-content: center; /* Centers horizontally */
-  align-items: center; /* Centers vertically */
-  margin: 20px auto; /* Centers the button in the container */
-  width: fit-content; /* Adjusts width to fit text */
+  justify-content: center;
+  align-items: center;
+  margin: 20px auto;
+  width: fit-content;
+}
+.add-vendor-button:hover {
+  color: #2196f3;
+  background: none;
+}
+.expense-button {
+  display: flex;
+  justify-content: flex-end;
+}
+.add-coding-button {
+  padding: 8px 0;
+  cursor: pointer;
+  font-weight: 500;
+  border-radius: 8px;
+  background: #f5f5f5;
+  width: 200px;
+  color: #333;
+  border: 1px solid #e0e0e0;
+}
+.add-coding-button:hover {
+  color: #2196f3;
+  background: none;
 }
 
 .form-actions {
@@ -244,6 +349,27 @@
 /* form section ends here */
 .button-group {
   display: flex;
-  justify-content: space-between;
-  margin-top: 1rem;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 24px;
+}
+.button {
+  padding: 10px 20px;
+  border-radius: 4px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.button.primary {
+  background: #2196f3;
+  color: white;
+  width: 200px;
+}
+
+.button.secondary {
+  background: #f5f5f5;
+  width: 200px;
+  color: #333;
+  border: 1px solid #e0e0e0;
 }
