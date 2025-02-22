@@ -48,16 +48,6 @@ function Login({ onLogin }) {
         initialValues={{ username: '', password: '' }}
         validationSchema={LoginSchema}
         onSubmit={handleSubmit}
-        // initialValues={{ username: '', password: '' }}
-        // validationSchema={LoginSchema}
-        // onSubmit={(values, { setSubmitting }) => {
-        //   setTimeout(() => {
-        //     // Simulating API call
-        //     console.log('Logging in', values);
-        //     onLogin();
-        //     setSubmitting(false);
-        //   }, 400);
-        // }}
       >
         {({ isSubmitting }) => (
           <Form className='login-form'>
