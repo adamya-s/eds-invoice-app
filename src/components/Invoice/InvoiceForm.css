@@ -33,14 +33,21 @@
   cursor: pointer;
   color: #666;
 }
-
+.tab:hover {
+  color: #f6f6f6;
+}
 .tab.active {
   color: #2196f3;
   border-bottom: 2px solid #2196f3;
 }
+.tab.active:hover {
+  color: #f6f6f6;
+  border-bottom: 2px solid #2196f3;
+}
 .logout-button {
   background-color: #ff4d4f;
-  height: 45px;
+  height: 40px;
+  border-radius: 8px;
 }
 
 .logout-button:hover {

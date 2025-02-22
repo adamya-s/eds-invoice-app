@@ -1,5 +1,6 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
+import Logo from '../../assets/eds-logo.png';
 import './Login.css';
 
 const LoginSchema = Yup.object().shape({
@@ -10,6 +11,9 @@ const LoginSchema = Yup.object().shape({
 function Login({ onLogin }) {
   return (
     <div className='login-container'>
+      <div className='logo-container'>
+        <img src={Logo} alt='Company Logo' className='company-logo' />
+      </div>
       <h2>Login</h2>
       <Formik
         initialValues={{ username: '', password: '' }}

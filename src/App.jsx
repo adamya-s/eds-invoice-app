@@ -39,10 +39,13 @@ function App() {
               isLoggedIn ? (
                 <Navigate to='/' replace />
               ) : (
-                <Login onLogin={handleLogin} />
+                <div className='login-screen'>
+                  <Login onLogin={handleLogin} />
+                </div>
               )
             }
           />
+
           <Route
             path='/'
             element={

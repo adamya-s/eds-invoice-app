@@ -6,7 +6,15 @@
   width: 100%;
   max-width: 400px;
 }
-
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+.company-logo {
+  max-width: 250px;
+  height: auto;
+}
 .login-container h2 {
   margin-bottom: 1.5rem;
   color: #1890ff;
