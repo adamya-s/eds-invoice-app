@@ -11,7 +11,6 @@ import { TbInvoice } from 'react-icons/tb';
 import { LiaCommentSolid } from 'react-icons/lia';
 import './InvoiceForm.css';
 
-// Reference the worker file from the public folder
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
 const InvoiceSchema = Yup.object().shape({
@@ -37,25 +36,6 @@ const InvoiceSchema = Yup.object().shape({
   location: Yup.string().required('Location is required'),
 });
 
-// Add an Error Boundary component
-class PDFErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error) {
-    return { hasError: true };
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return <div>Error loading PDF. Please try again.</div>;
-    }
-    return this.props.children;
-  }
-}
-
 const InvoiceForm = ({ onLogout }) => {
   const [pdfFile, setPdfFile] = useState(null);
   const [numPages, setNumPages] = useState(null);
@@ -73,16 +53,7 @@ const InvoiceForm = ({ onLogout }) => {
   const handlePdfFileChange = async (event) => {
     const file = event.target.files[0];
     if (file && file.type === 'application/pdf') {
-      try {
-        // Convert file to ArrayBuffer
-        const arrayBuffer = await file.arrayBuffer();
-        // Create a new Uint8Array from the ArrayBuffer to ensure it remains valid
-        const uint8Array = new Uint8Array(arrayBuffer);
-        setPdfFile({ data: uint8Array.buffer }); // Store the buffer
-      } catch (error) {
-        console.error('Error processing PDF:', error);
-        alert('Error processing PDF file. Please try again.');
-      }
+      setPdfFile(file); // Store the file object
     } else {
       alert('Please select a valid PDF file.');
       event.target.value = null;
@@ -111,41 +82,41 @@ const InvoiceForm = ({ onLogout }) => {
     });
 
     try {
-      const response = await fetch('/dummy-invoice.pdf');
+      const response = await fetch('/public/dummy-invoice.pdf');
       if (!response.ok) throw new Error('Failed to load dummy PDF');
-      const arrayBuffer = await response.arrayBuffer();
-      setPdfFile({ data: arrayBuffer });
+      const blob = await response.blob();
+      setPdfFile(
+        new File([blob], 'dummy-invoice.pdf', { type: 'application/pdf' })
+      );
     } catch (error) {
       console.error('Error loading dummy PDF:', error);
       alert('Error loading dummy PDF. Please try again.');
     }
   };
+  const memoizedPdfFile = useMemo(() => pdfFile, [pdfFile]);
 
-  // Update PDF viewer component
   const renderPdfViewer = () => {
-    return pdfFile ? (
-      <PDFErrorBoundary>
-        <Document
-          file={{ data: pdfFile.data }}
-          onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-          onLoadError={(error) => {
-            console.error('Error loading PDF:', error);
-            alert('Error loading PDF. Please try again.');
-          }}
-          className='pdf-document'
-          options={pdfOptions} // Use the memoized options
-        >
-          {numPages > 0 && (
-            <Page
-              pageNumber={pageNumber}
-              className='pdf-page'
-              scale={1.0}
-              renderTextLayer={false}
-              renderAnnotationLayer={false}
-            />
-          )}
-        </Document>
-      </PDFErrorBoundary>
+    return memoizedPdfFile ? (
+      <Document
+        file={pdfFile}
+        onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+        onLoadError={(error) => {
+          console.error('Error loading PDF:', error);
+          alert('Error loading PDF. Please try again.');
+        }}
+        className='pdf-document'
+        options={pdfOptions}
+      >
+        {numPages > 0 && (
+          <Page
+            pageNumber={pageNumber}
+            className='pdf-page'
+            scale={1.0}
+            renderTextLayer={false}
+            renderAnnotationLayer={false}
+          />
+        )}
+      </Document>
     ) : null;
   };
 

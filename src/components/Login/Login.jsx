@@ -15,17 +15,14 @@ const LoginSchema = Yup.object().shape({
 function Login({ onLogin }) {
   const navigate = useNavigate();
   useEffect(() => {
-    // Check for existing session in localStorage
     const userSession = localStorage.getItem('userSession');
     if (userSession) {
-      // If session exists, call onLogin and redirect
       onLogin();
-      navigate('/dashboard'); // Replace with your main application route
+      navigate('/dashboard');
     }
   }, [navigate, onLogin]);
 
   const handleSubmit = (values, { setSubmitting }) => {
-    // Simulating API call
     setTimeout(() => {
       console.log('Logging in', values);
       // Store session data in localStorage
@@ -38,7 +35,7 @@ function Login({ onLogin }) {
       );
       onLogin();
       setSubmitting(false);
-      navigate('/'); // Replace with your main application route
+      navigate('/');
     }, 400);
   };
   return (

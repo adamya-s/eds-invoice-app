@@ -299,7 +299,7 @@
   border-radius: 5px;
   overflow: hidden;
   background: white;
-  margin-left: 10px; /* Add some spacing between text and toggle buttons */
+  margin-left: 10px;
 }
 .toggle-btn {
   padding: 6px 12px;
