@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
 import * as Yup from 'yup';
 import uploadIcon from '../../assets/eds-invoice.gif';
 import { TfiDownload } from 'react-icons/tfi';
@@ -8,66 +10,145 @@ import { PiBuildingOfficeBold } from 'react-icons/pi';
 import { TbInvoice } from 'react-icons/tb';
 import { LiaCommentSolid } from 'react-icons/lia';
 import './InvoiceForm.css';
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+
+// Reference the worker file from the public folder
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
 const InvoiceSchema = Yup.object().shape({
+  vendorInformation: Yup.string().required(
+    'Please select Vendor Information is required'
+  ),
+  purchaseOrderNumber: Yup.string().required(
+    'Purchase Order Number is required'
+  ),
   invoiceNumber: Yup.string().required('Invoice number is required'),
-  issueDate: Yup.date().required('Issue date is required'),
-  dueDate: Yup.date().required('Due date is required'),
-  companyName: Yup.string().required('Company name is required'),
-  billTo: Yup.string().required('Bill to is required'),
-  billToEmail: Yup.string()
-    .email('Invalid email')
-    .required('Email is required'),
-  billToAddress: Yup.string().required('Address is required'),
-  shipTo: Yup.string().required('Ship to is required'),
-  shipToAddress: Yup.string().required('Shipping address is required'),
-  amount: Yup.number()
+  invoiceDate: Yup.date().required('Invoice date is required'),
+  totalAmount: Yup.number()
     .positive('Amount must be positive')
     .required('Amount is required'),
+  paymentStatus: Yup.string().required('Payment status is required'),
+  invoiceDueDate: Yup.date().required('Invoice due date is required'),
+  glPostDate: Yup.date().required('GL Post date is required'),
+  lineAmount: Yup.number()
+    .positive('Line Amount must be positive')
+    .required('Line Amount is required'),
+  department: Yup.string().required('Department is required'),
+  account: Yup.string().required('Account to is required'),
+  location: Yup.string().required('Location is required'),
 });
+
+// Add an Error Boundary component
+class PDFErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <div>Error loading PDF. Please try again.</div>;
+    }
+    return this.props.children;
+  }
+}
 
 const InvoiceForm = ({ onLogout }) => {
   const [pdfFile, setPdfFile] = useState(null);
-  const [formData, setFormData] = useState(null);
+  const [numPages, setNumPages] = useState(null);
+  const [pageNumber, setPageNumber] = useState(1);
 
-  const handlePdfFileChange = (event) => {
+  // Memoize the options object
+  const pdfOptions = useMemo(
+    () => ({
+      cMapUrl: 'cmaps/',
+      standardFontDataUrl: 'standard_fonts/',
+    }),
+    []
+  );
+
+  const handlePdfFileChange = async (event) => {
     const file = event.target.files[0];
     if (file && file.type === 'application/pdf') {
-      setPdfFile(file);
+      try {
+        // Convert file to ArrayBuffer
+        const arrayBuffer = await file.arrayBuffer();
+        // Create a new Uint8Array from the ArrayBuffer to ensure it remains valid
+        const uint8Array = new Uint8Array(arrayBuffer);
+        setPdfFile({ data: uint8Array.buffer }); // Store the buffer
+      } catch (error) {
+        console.error('Error processing PDF:', error);
+        alert('Error processing PDF file. Please try again.');
+      }
     } else {
       alert('Please select a valid PDF file.');
+      event.target.value = null;
     }
   };
 
-  const populateDummyData = (setFieldValue) => {
+  const populateDummyData = async (setFieldValue) => {
     const dummyData = {
+      vendorInformation: 'exterminators',
+      purchaseOrderNumber: 'vendor1',
       invoiceNumber: 'INV-001',
-      issueDate: '2023-05-01',
-      dueDate: '2023-05-15',
-      companyName: 'Acme Corp',
-      billTo: 'John Doe',
-      billToEmail: 'john@example.com',
-      billToAddress: '123 Main St, Anytown, USA',
-      shipTo: 'Jane Smith',
-      shipToAddress: '456 Oak Ave, Othertown, USA',
-      amount: 1000,
+      invoiceDate: '2025-02-01',
+      totalAmount: 1000,
+      paymentStatus: 'paid',
+      invoiceDueDate: '2025-05-25',
+      glPostDate: '2025-05-28',
+      lineAmount: 2000,
+      department: 'HR',
+      account: 'Saving',
+      location: 'Bengaluru',
+      description: 'This is description',
     };
 
     Object.keys(dummyData).forEach((key) => {
       setFieldValue(key, dummyData[key]);
     });
 
-    // Set dummy PDF
-    fetch('/dummy-invoice.pdf')
-      .then((response) => response.blob())
-      .then((blob) => {
-        const file = new File([blob], 'dummy-invoice.pdf', {
-          type: 'application/pdf',
-        });
-        setPdfFile(file);
-      });
+    try {
+      const response = await fetch('/dummy-invoice.pdf');
+      if (!response.ok) throw new Error('Failed to load dummy PDF');
+      const arrayBuffer = await response.arrayBuffer();
+      setPdfFile({ data: arrayBuffer });
+    } catch (error) {
+      console.error('Error loading dummy PDF:', error);
+      alert('Error loading dummy PDF. Please try again.');
+    }
   };
+
+  // Update PDF viewer component
+  const renderPdfViewer = () => {
+    return pdfFile ? (
+      <PDFErrorBoundary>
+        <Document
+          file={{ data: pdfFile.data }}
+          onLoadSuccess={({ numPages }) => setNumPages(numPages)}
+          onLoadError={(error) => {
+            console.error('Error loading PDF:', error);
+            alert('Error loading PDF. Please try again.');
+          }}
+          className='pdf-document'
+          options={pdfOptions} // Use the memoized options
+        >
+          {numPages > 0 && (
+            <Page
+              pageNumber={pageNumber}
+              className='pdf-page'
+              scale={1.0}
+              renderTextLayer={false}
+              renderAnnotationLayer={false}
+            />
+          )}
+        </Document>
+      </PDFErrorBoundary>
+    ) : null;
+  };
+
   return (
     <div className='invoice-form-container'>
       <header className='header'>
@@ -95,11 +176,19 @@ const InvoiceForm = ({ onLogout }) => {
           <div className='upload-icon'>
             <img src={uploadIcon} alt='Upload icon' width='300' />
           </div>
-          {pdfFile && (
+          <div className='pdf-viewer-container'>
+            {renderPdfViewer()}
+            {pdfFile && (
+              <p className='pdf-page-info'>
+                Page {pageNumber} of {numPages}
+              </p>
+            )}
+          </div>
+          {/* {pdfFile && (
             <Document file={pdfFile}>
               <Page pageNumber={1} />
             </Document>
-          )}
+          )} */}
           <input
             type='file'
             accept='application/pdf'
@@ -119,16 +208,17 @@ const InvoiceForm = ({ onLogout }) => {
         <div className='form-container'>
           <Formik
             initialValues={{
+              vendorInformation: '',
+              purchaseOrderNumber: '',
               invoiceNumber: '',
-              issueDate: '',
-              dueDate: '',
-              companyName: '',
-              billTo: '',
-              billToEmail: '',
-              billToAddress: '',
-              shipTo: '',
-              shipToAddress: '',
-              amount: '',
+              invoiceDate: '',
+              totalAmount: '',
+              paymentStatus: '',
+              invoiceDueDate: '',
+              glPostDate: '',
+              department: '',
+              account: '',
+              location: '',
             }}
             validationSchema={InvoiceSchema}
             onSubmit={(values, { setSubmitting }) => {
@@ -140,7 +230,7 @@ const InvoiceForm = ({ onLogout }) => {
               }, 400);
             }}
           >
-            {({ isSubmitting }) => (
+            {({ isSubmitting, setFieldValue }) => (
               <Form className='invoice-form'>
                 {/* Vendor Details */}
                 <section className='form-section'>
@@ -154,16 +244,16 @@ const InvoiceForm = ({ onLogout }) => {
 
                   <div className='form-group'>
                     <label>Vendor *</label>
-                    <Field as='select' name='vendor'>
-                      <option value=''>A-1 Exterminators</option>
-                      <option value='vendor1'>Vendor 1</option>
+                    <Field as='select' name='vendorInformation'>
+                      <option value=''>Select vendor</option>
+                      <option value='exterminators'>A-1 Exterminators</option>
                     </Field>
                     <p className='vender-address'>550 Main St. Lynn</p>
                     <button type='button' className='add-vendor-button'>
                       + View Vendor Details
                     </button>
                     <ErrorMessage
-                      name='vendor'
+                      name='vendorInformation'
                       component='div'
                       className='error'
                     />
@@ -182,12 +272,12 @@ const InvoiceForm = ({ onLogout }) => {
 
                   <div className='form-group'>
                     <label>Purchase Order Number *</label>
-                    <Field as='select' name='vendor'>
+                    <Field as='select' name='purchaseOrderNumber'>
                       <option value=''>Select PO Number</option>
                       <option value='vendor1'>Vendor 1</option>
                     </Field>
                     <ErrorMessage
-                      name='vendor'
+                      name='purchaseOrderNumber'
                       component='div'
                       className='error'
                     />
@@ -230,25 +320,31 @@ const InvoiceForm = ({ onLogout }) => {
                         <option value='paid'>Paid</option>
                         <option value='unpaid'>Unpaid</option>
                       </Field>
+                      <ErrorMessage
+                        name='paymentStatus'
+                        component='div'
+                        className='error'
+                      />
                     </div>
                   </div>
                   <div className='invoice-input-group'>
                     <div className='invoice-group'>
-                      <label>Total Amount *</label>
-                      <Field type='number' name='totalAmount' />
+                      <label>Invoice Due Date *</label>
+                      <Field type='date' name='invoiceDueDate' />
                       <ErrorMessage
-                        name='totalAmount'
+                        name='invoiceDueDate'
                         component='div'
                         className='error'
                       />
                     </div>
                     <div className='invoice-group'>
-                      <label>Payment Terms *</label>
-                      <Field as='select' name='paymentStatus'>
-                        <option value=''>Select Status</option>
-                        <option value='paid'>Paid</option>
-                        <option value='unpaid'>Unpaid</option>
-                      </Field>
+                      <label>GL Post Date *</label>
+                      <Field type='date' name='glPostDate' />
+                      <ErrorMessage
+                        name='glPostDate'
+                        component='div'
+                        className='error'
+                      />
                     </div>
                   </div>
                   <div className='form-group'>
@@ -304,7 +400,7 @@ const InvoiceForm = ({ onLogout }) => {
                         <option value='Current'>Current</option>
                       </Field>
                       <ErrorMessage
-                        name='department'
+                        name='account'
                         component='div'
                         className='error'
                       />
@@ -317,7 +413,7 @@ const InvoiceForm = ({ onLogout }) => {
                         <option value='Pune'>Pune</option>
                       </Field>
                       <ErrorMessage
-                        name='department'
+                        name='location'
                         component='div'
                         className='error'
                       />

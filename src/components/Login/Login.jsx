@@ -1,14 +1,46 @@
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import Logo from '../../assets/eds-logo.png';
 import './Login.css';
 
 const LoginSchema = Yup.object().shape({
-  username: Yup.string().required('Username is required'),
+  username: Yup.string()
+    .min(3, 'Username must be at least 3 characters')
+    .required('Username is required'),
   password: Yup.string().required('Password is required'),
 });
 
 function Login({ onLogin }) {
+  const navigate = useNavigate();
+  useEffect(() => {
+    // Check for existing session in localStorage
+    const userSession = localStorage.getItem('userSession');
+    if (userSession) {
+      // If session exists, call onLogin and redirect
+      onLogin();
+      navigate('/dashboard'); // Replace with your main application route
+    }
+  }, [navigate, onLogin]);
+
+  const handleSubmit = (values, { setSubmitting }) => {
+    // Simulating API call
+    setTimeout(() => {
+      console.log('Logging in', values);
+      // Store session data in localStorage
+      localStorage.setItem(
+        'userSession',
+        JSON.stringify({
+          username: values.username,
+          timestamp: new Date().toISOString(),
+        })
+      );
+      onLogin();
+      setSubmitting(false);
+      navigate('/'); // Replace with your main application route
+    }, 400);
+  };
   return (
     <div className='login-container'>
       <div className='logo-container'>
@@ -18,14 +50,17 @@ function Login({ onLogin }) {
       <Formik
         initialValues={{ username: '', password: '' }}
         validationSchema={LoginSchema}
-        onSubmit={(values, { setSubmitting }) => {
-          setTimeout(() => {
-            // Simulating API call
-            console.log('Logging in', values);
-            onLogin();
-            setSubmitting(false);
-          }, 400);
-        }}
+        onSubmit={handleSubmit}
+        // initialValues={{ username: '', password: '' }}
+        // validationSchema={LoginSchema}
+        // onSubmit={(values, { setSubmitting }) => {
+        //   setTimeout(() => {
+        //     // Simulating API call
+        //     console.log('Logging in', values);
+        //     onLogin();
+        //     setSubmitting(false);
+        //   }, 400);
+        // }}
       >
         {({ isSubmitting }) => (
           <Form className='login-form'>

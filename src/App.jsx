@@ -27,6 +27,7 @@ function App() {
   const handleLogout = () => {
     setIsLoggedIn(false);
     localStorage.removeItem('session');
+    localStorage.removeItem('userSession');
   };
 
   return (

@@ -80,6 +80,33 @@
   max-width: 100%;
   height: auto;
 }
+
+/* PDF viewer section */
+.pdf-viewer-container {
+  width: 100%;
+  max-height: 600px;
+  overflow: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+.pdf-document {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pdf-page {
+  max-width: 100%;
+  height: auto;
+}
+
+.pdf-page-info {
+  text-align: center;
+  margin: 10px 0;
+  color: #666;
+}
 /* PDF Upload section */
 .form-container {
   width: 100%;
