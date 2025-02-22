@@ -407,3 +407,61 @@
   color: #333;
   border: 1px solid #e0e0e0;
 }
+
+/* adding css for responsiveness */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .logout-button {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .invoice-input-group {
+    display: block;
+  }
+  .expense-input-group {
+    display: block;
+  }
+  .header h1 {
+    margin-left: 0;
+  }
+  .header-right {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .tabs {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .form-pdf-container {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pdf-container {
+    padding: 1rem;
+  }
+
+  .invoice-form {
+    padding: 0.5rem;
+  }
+
+  .form-section {
+    padding: 0.5rem;
+  }
+
+  .button-group {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .button {
+    width: 100%;
+  }
+}
